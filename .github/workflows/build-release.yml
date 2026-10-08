@@ -1,0 +1,159 @@
+name: Build All Kernel Flavors & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (leave empty for auto-generated date tag)'
+        required: false
+        default: ''
+      release_name:
+        description: 'Release Title (optional)'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build ${{ matrix.flavor.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor:
+          - name: "BakaSU"
+            args: "--bakasu --susfs --zero --extras"
+          - name: "SukiSU-Ultra"
+            args: "--sukisu --susfs --zero --extras"
+          - name: "KernelSU-Next"
+            args: "--ksun --susfs --zero --extras"
+          - name: "KernelSU-Official"
+            args: "--ksu --susfs --zero --extras"
+          - name: "ReSukiSU"
+            args: "--resuksu --susfs --zero --extras"
+          - name: "YukiSU"
+            args: "--yukisu --susfs --zero --extras"
+          - name: "More-KernelSU"
+            args: "--mksu --susfs --zero --extras"
+          - name: "RKSU"
+            args: "--rksu --susfs --zero --extras"
+          - name: "KernelSU-Lite"
+            args: "--ksulite --susfs --zero --extras"
+          - name: "WildSU"
+            args: "--wildsu --susfs --zero --extras"
+          - name: "SakiSU"
+            args: "--sakisu --susfs --zero --extras"
+          - name: "ApexSU"
+            args: "--apexsu --susfs --zero --extras"
+          - name: "Stock"
+            args: "--stock --extras"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+          sudo apt-get clean
+          df -h
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev python3 zip curl git qemu-user
+
+      - name: Build Kernel (${{ matrix.flavor.name }})
+        run: |
+          chmod +x make.sh
+          ./make.sh ${{ matrix.flavor.args }}
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p artifacts
+          cp -v out_images/AnyKernel3-5.15.180-*.zip artifacts/ 2>/dev/null || true
+          rm -f artifacts/AnyKernel3-latest.zip
+          ls -la artifacts/
+
+      - name: Upload Flavor Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ matrix.flavor.name }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Publish All Kernels to Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download All Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded_artifacts/
+
+      - name: Organize Release Files
+        run: |
+          mkdir -p release_files
+          find downloaded_artifacts/ -type f -name "AnyKernel3-*.zip" -exec cp -v {} release_files/ \;
+          cd release_files
+          ls -lh
+          # Generate SHA256 Checksums
+          sha256sum AnyKernel3-*.zip > sha256sums.txt
+          cat sha256sums.txt
+
+      - name: Determine Release Tag and Title
+        id: rel_info
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="release-$(date +'%Y.%m.%d-%H%M')"
+          fi
+
+          if [ -n "${{ github.event.inputs.release_name }}" ]; then
+            TITLE="${{ github.event.inputs.release_name }}"
+          else
+            TITLE="OnePlus Ace 2 Pro (PJA110) All-Kernel Release (${TAG})"
+          fi
+
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "title=${TITLE}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel_info.outputs.tag }}
+          name: ${{ steps.rel_info.outputs.title }}
+          draft: false
+          prerelease: false
+          files: |
+            release_files/*
+          body: |
+            ## OnePlus Ace 2 Pro (PJA110) Kernel Release
+            
+            Автоматическая сборка всех вариаций ядра Linux 5.15 (Android 13 GKI) для OnePlus Ace 2 Pro (`kalama` / SM8550).
+            
+            ### Содержимое релиза:
+            Каждая сборка включает:
+            - **SusFS v2.3.0** & **ZeroMount v2.0** (для всех вариантов с поддержкой рута)
+            - **`CONFIG_UDMABUF=y`** & **VirtIO** (стабильность графики и предотвращение чёрных экранов SurfaceFlinger)
+            - **TCP BBR** (Google BBR congestion control)
+            - **NTFS3** (нативный драйвер Paragon) & **Btrfs**
+            
+            ### Установка:
+            Прошивать соответствующий `AnyKernel3-*.zip` через **KernelFlasher** (на работающей системе) или через **TWRP Recovery**.
+            
+            Хэш-суммы SHA-256 проверены и доступны в файле `sha256sums.txt`.
