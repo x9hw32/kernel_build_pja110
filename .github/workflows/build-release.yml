@@ -211,8 +211,9 @@ jobs:
 
       - name: Install Build Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev python3 zip curl git qemu-user
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev dwarves \
+            python3 python-is-python3 zip curl git qemu-user binutils-aarch64-linux-gnu \
+            gcc-aarch64-linux-gnu rsync kmod cpio lz4 zstd
 
       - name: Build Kernel (${{ matrix.flavor.name }})
         run: |

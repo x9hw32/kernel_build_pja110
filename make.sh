@@ -24,6 +24,7 @@ log_err()  { echo -e "${RED}[ERROR]${NC} $*"; }
 CLANG_DIR="${TOP_DIR}/toolchains/clang-r450784c"
 CC="${CLANG_DIR}/bin/clang"
 LD="${CLANG_DIR}/bin/ld.lld"
+export PATH="${CLANG_DIR}/bin:${PATH}"
 OUT_DIR="${TOP_DIR}/out"
 COMMON_DIR="${TOP_DIR}/common"
 OUT_IMAGES_DIR="${TOP_DIR}/out_images"
@@ -374,6 +375,8 @@ if [[ ! -x "${CC}" ]]; then
     log_info "Downloading official AOSP Clang toolchain (llvm-r450784)..."
     mkdir -p "${CLANG_DIR}"
     if curl -fL --retry 3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/llvm-r450784.tar.gz" | tar -xz -C "${CLANG_DIR}"; then
+        chmod -R +x "${CLANG_DIR}/bin" 2>/dev/null || true
+        export PATH="${CLANG_DIR}/bin:${PATH}"
         log_succ "Clang toolchain downloaded and unpacked successfully!"
     else
         log_err "Failed to download Clang. Please check network connection or manually extract Clang to ${CLANG_DIR}"
@@ -547,7 +550,8 @@ fi
 if [[ ! -f "${OUT_DIR}/.config" ]]; then
     log_info "Generating base config from gki_defconfig..."
     make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
-        CC="${CC}" LD="${LD}" LLVM=1 LLVM_IAS=1 \
+        CC="${CC}" LD="${LD}" HOSTCC=clang HOSTCXX=clang++ \
+        LLVM=1 LLVM_IAS=1 \
         CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- \
         gki_defconfig
 fi
@@ -676,22 +680,26 @@ else
     unset_config_val "CONFIG_BTRFS_FS_POSIX_ACL"
 fi
 
-# VirtIO subsystem & UDMABUF (Mandatory for SM8550 display composition, gralloc & VirtIO hardware HALs)
-set_config_val "CONFIG_VIRTIO" "y"
-set_config_val "CONFIG_VIRTIO_PCI" "y"
-set_config_val "CONFIG_VIRTIO_BALLOON" "y"
-set_config_val "CONFIG_VIRTIO_BLK" "y"
-set_config_val "CONFIG_VIRTIO_NET" "y"
-set_config_val "CONFIG_VIRTIO_CONSOLE" "y"
-set_config_val "CONFIG_VIRTIO_INPUT" "y"
-set_config_val "CONFIG_VIRTIO_DMA_SHARED_BUFFER" "y"
-set_config_val "CONFIG_UDMABUF" "y"
-set_config_val "CONFIG_VHOST_NET" "y"
-set_config_val "CONFIG_VIRTIO_VSOCKETS" "y"
+# Ensure bare-metal SM8550 clean state (remove any virtual machine VirtIO / UDMABUF conflicts)
+unset_config_val "CONFIG_VIRTIO_PCI"
+unset_config_val "CONFIG_VIRTIO_BALLOON"
+unset_config_val "CONFIG_VIRTIO_BLK"
+unset_config_val "CONFIG_VIRTIO_NET"
+unset_config_val "CONFIG_VIRTIO_CONSOLE"
+unset_config_val "CONFIG_VIRTIO_INPUT"
+unset_config_val "CONFIG_VIRTIO_DMA_SHARED_BUFFER"
+unset_config_val "CONFIG_UDMABUF"
+unset_config_val "CONFIG_VHOST_NET"
+unset_config_val "CONFIG_VIRTIO_VSOCKETS"
+
+# Disable BTF debug info to eliminate host pahole and libelf issues
+unset_config_val "CONFIG_DEBUG_INFO_BTF"
+unset_config_val "CONFIG_DEBUG_INFO_BTF_MODULES"
 
 # Ensure all config dependencies are cleanly resolved without prompts
 make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
-    CC="${CC}" LD="${LD}" LLVM=1 LLVM_IAS=1 \
+    CC="${CC}" LD="${LD}" HOSTCC=clang HOSTCXX=clang++ \
+    LLVM=1 LLVM_IAS=1 \
     CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- \
     olddefconfig >/dev/null 2>&1
 
@@ -704,7 +712,8 @@ rm -f "${OUT_DIR}/.version"
 export KBUILD_BUILD_VERSION="1"
 
 make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
-    CC="${CC}" LD="${LD}" LLVM=1 LLVM_IAS=1 \
+    CC="${CC}" LD="${LD}" HOSTCC=clang HOSTCXX=clang++ \
+    LLVM=1 LLVM_IAS=1 \
     CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- \
     -j"${JOBS}" Image
 
@@ -731,6 +740,7 @@ if [[ -f "${STOCK_BOOT}" ]]; then
         cd "${TEMP_UNPACK}"
         ${MAGISKBOOT} unpack "${STOCK_BOOT}" >/dev/null
         cp -f "${BUILT_IMAGE}" kernel
+        export PATCHVBMETAFLAG=true
         ${MAGISKBOOT} repack "${STOCK_BOOT}" "${TARGET_BOOT}" >/dev/null
     )
 
