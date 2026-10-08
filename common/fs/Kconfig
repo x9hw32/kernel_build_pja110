@@ -388,7 +388,7 @@ config IO_WQ
 
 config ZEROMOUNT
 	bool "ZeroMount Path Redirection Subsystem"
-	default y
+	default n
 	help
 	  ZeroMount allows path redirection and virtual file injection
 	  without mounting filesystems. Useful for systemless modifications.

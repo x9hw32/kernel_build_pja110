@@ -10,7 +10,6 @@
 - **Поддержка Root решений**: SukiSU Ultra, KernelSU, KernelSU Next, ReSukiSU Ultra, YukiSU, More KernelSU, BakaSU, RKSU, KernelSU Lite, WildSU, SakiSU, ApexSU.
 - **Интеграция аддонов**: 
   - **SusFS** (полное скрытие рута и маунтов).
-  - **ZeroMount** (нативный VFS-режим).
 - **Подсистемы и модули**: 
   - `CONFIG_UDMABUF=y` + VirtIO (стабильность графики SM8550).
 - **Сетевые и файловые оптимизации**: 
@@ -61,9 +60,9 @@ stock_images/boot.img
 
 ### 3. Сборка ядра
 
-**Рекомендуемая конфигурация (BakaSU + SusFS + ZeroMount + Extras):**
+**Рекомендуемая конфигурация (BakaSU + SusFS + Extras):**
 ```bash
-./make.sh --bakasu --susfs --zero --extras
+./make.sh --bakasu --susfs --extras
 ```
 
 **Сборка с SukiSU:**
@@ -88,7 +87,6 @@ stock_images/boot.img
 1. **`AnyKernel3-*.zip`** — установочный архив для прошивки через **KernelFlasher** (на живой системе) или через **TWRP Recovery**.
 2. **`*.apk`** / **`manager.apk`** — актуальное приложение рут-менеджера.
 3. **`ksu_module_susfs_*.zip`** — компаньон-модуль SusFS.
-4. **`zeromount-*.zip`** — компаньон-модуль ZeroMount.
 
 ---
 

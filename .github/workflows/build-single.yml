@@ -27,11 +27,6 @@ on:
         required: true
         type: boolean
         default: true
-      enable_zeromount:
-        description: 'Enable ZeroMount v2.0 (ignored for stock)'
-        required: true
-        type: boolean
-        default: true
       create_release:
         description: 'Publish directly to GitHub Releases'
         required: true
@@ -71,21 +66,15 @@ jobs:
         run: |
           ROOT="${{ github.event.inputs.root }}"
           ENABLE_SUSFS="${{ github.event.inputs.enable_susfs }}"
-          ENABLE_ZERO="${{ github.event.inputs.enable_zeromount }}"
 
           ARGS="--${ROOT}"
           if [ "${ROOT}" = "stock" ]; then
-            ARGS="--stock --no-susfs --no-zero"
+            ARGS="--stock --no-susfs"
           else
             if [ "${ENABLE_SUSFS}" = "true" ]; then
               ARGS="${ARGS} --susfs"
             else
               ARGS="${ARGS} --no-susfs"
-            fi
-            if [ "${ENABLE_ZERO}" = "true" ]; then
-              ARGS="${ARGS} --zero"
-            else
-              ARGS="${ARGS} --no-zero"
             fi
           fi
           ARGS="${ARGS} --extras"

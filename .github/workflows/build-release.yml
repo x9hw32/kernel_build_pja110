@@ -27,175 +27,103 @@ jobs:
           # --- BakaSU ---
           - id: bakasu-pure
             name: "BakaSU (Pure)"
-            args: "--bakasu --no-susfs --no-zero --extras"
+            args: "--bakasu --no-susfs --extras"
           - id: bakasu-susfs
             name: "BakaSU (SusFS)"
-            args: "--bakasu --susfs --no-zero --extras"
-          - id: bakasu-zero
-            name: "BakaSU (ZeroMount)"
-            args: "--bakasu --no-susfs --zero --extras"
-          - id: bakasu-susfs-zero
-            name: "BakaSU (SusFS + ZeroMount)"
-            args: "--bakasu --susfs --zero --extras"
+            args: "--bakasu --susfs --extras"
 
           # --- SukiSU-Ultra ---
           - id: sukisu-pure
             name: "SukiSU-Ultra (Pure)"
-            args: "--sukisu --no-susfs --no-zero --extras"
+            args: "--sukisu --no-susfs --extras"
           - id: sukisu-susfs
             name: "SukiSU-Ultra (SusFS)"
-            args: "--sukisu --susfs --no-zero --extras"
-          - id: sukisu-zero
-            name: "SukiSU-Ultra (ZeroMount)"
-            args: "--sukisu --no-susfs --zero --extras"
-          - id: sukisu-susfs-zero
-            name: "SukiSU-Ultra (SusFS + ZeroMount)"
-            args: "--sukisu --susfs --zero --extras"
+            args: "--sukisu --susfs --extras"
 
           # --- KernelSU-Next ---
           - id: ksun-pure
             name: "KernelSU-Next (Pure)"
-            args: "--ksun --no-susfs --no-zero --extras"
+            args: "--ksun --no-susfs --extras"
           - id: ksun-susfs
             name: "KernelSU-Next (SusFS)"
-            args: "--ksun --susfs --no-zero --extras"
-          - id: ksun-zero
-            name: "KernelSU-Next (ZeroMount)"
-            args: "--ksun --no-susfs --zero --extras"
-          - id: ksun-susfs-zero
-            name: "KernelSU-Next (SusFS + ZeroMount)"
-            args: "--ksun --susfs --zero --extras"
+            args: "--ksun --susfs --extras"
 
           # --- KernelSU-Official ---
           - id: ksu-pure
             name: "KernelSU-Official (Pure)"
-            args: "--ksu --no-susfs --no-zero --extras"
+            args: "--ksu --no-susfs --extras"
           - id: ksu-susfs
             name: "KernelSU-Official (SusFS)"
-            args: "--ksu --susfs --no-zero --extras"
-          - id: ksu-zero
-            name: "KernelSU-Official (ZeroMount)"
-            args: "--ksu --no-susfs --zero --extras"
-          - id: ksu-susfs-zero
-            name: "KernelSU-Official (SusFS + ZeroMount)"
-            args: "--ksu --susfs --zero --extras"
+            args: "--ksu --susfs --extras"
 
           # --- ReSukiSU ---
           - id: resuksu-pure
             name: "ReSukiSU (Pure)"
-            args: "--resuksu --no-susfs --no-zero --extras"
+            args: "--resuksu --no-susfs --extras"
           - id: resuksu-susfs
             name: "ReSukiSU (SusFS)"
-            args: "--resuksu --susfs --no-zero --extras"
-          - id: resuksu-zero
-            name: "ReSukiSU (ZeroMount)"
-            args: "--resuksu --no-susfs --zero --extras"
-          - id: resuksu-susfs-zero
-            name: "ReSukiSU (SusFS + ZeroMount)"
-            args: "--resuksu --susfs --zero --extras"
+            args: "--resuksu --susfs --extras"
 
           # --- YukiSU ---
           - id: yukisu-pure
             name: "YukiSU (Pure)"
-            args: "--yukisu --no-susfs --no-zero --extras"
+            args: "--yukisu --no-susfs --extras"
           - id: yukisu-susfs
             name: "YukiSU (SusFS)"
-            args: "--yukisu --susfs --no-zero --extras"
-          - id: yukisu-zero
-            name: "YukiSU (ZeroMount)"
-            args: "--yukisu --no-susfs --zero --extras"
-          - id: yukisu-susfs-zero
-            name: "YukiSU (SusFS + ZeroMount)"
-            args: "--yukisu --susfs --zero --extras"
+            args: "--yukisu --susfs --extras"
 
           # --- More-KernelSU ---
           - id: mksu-pure
             name: "More-KernelSU (Pure)"
-            args: "--mksu --no-susfs --no-zero --extras"
+            args: "--mksu --no-susfs --extras"
           - id: mksu-susfs
             name: "More-KernelSU (SusFS)"
-            args: "--mksu --susfs --no-zero --extras"
-          - id: mksu-zero
-            name: "More-KernelSU (ZeroMount)"
-            args: "--mksu --no-susfs --zero --extras"
-          - id: mksu-susfs-zero
-            name: "More-KernelSU (SusFS + ZeroMount)"
-            args: "--mksu --susfs --zero --extras"
+            args: "--mksu --susfs --extras"
 
           # --- Restricted-KernelSU (RKSU) ---
           - id: rksu-pure
             name: "Restricted-KernelSU (Pure)"
-            args: "--rksu --no-susfs --no-zero --extras"
+            args: "--rksu --no-susfs --extras"
           - id: rksu-susfs
             name: "Restricted-KernelSU (SusFS)"
-            args: "--rksu --susfs --no-zero --extras"
-          - id: rksu-zero
-            name: "Restricted-KernelSU (ZeroMount)"
-            args: "--rksu --no-susfs --zero --extras"
-          - id: rksu-susfs-zero
-            name: "Restricted-KernelSU (SusFS + ZeroMount)"
-            args: "--rksu --susfs --zero --extras"
+            args: "--rksu --susfs --extras"
 
           # --- KernelSU-Lite ---
           - id: ksulite-pure
             name: "KernelSU-Lite (Pure)"
-            args: "--ksulite --no-susfs --no-zero --extras"
+            args: "--ksulite --no-susfs --extras"
           - id: ksulite-susfs
             name: "KernelSU-Lite (SusFS)"
-            args: "--ksulite --susfs --no-zero --extras"
-          - id: ksulite-zero
-            name: "KernelSU-Lite (ZeroMount)"
-            args: "--ksulite --no-susfs --zero --extras"
-          - id: ksulite-susfs-zero
-            name: "KernelSU-Lite (SusFS + ZeroMount)"
-            args: "--ksulite --susfs --zero --extras"
+            args: "--ksulite --susfs --extras"
 
           # --- WildSU ---
           - id: wildsu-pure
             name: "WildSU (Pure)"
-            args: "--wildsu --no-susfs --no-zero --extras"
+            args: "--wildsu --no-susfs --extras"
           - id: wildsu-susfs
             name: "WildSU (SusFS)"
-            args: "--wildsu --susfs --no-zero --extras"
-          - id: wildsu-zero
-            name: "WildSU (ZeroMount)"
-            args: "--wildsu --no-susfs --zero --extras"
-          - id: wildsu-susfs-zero
-            name: "WildSU (SusFS + ZeroMount)"
-            args: "--wildsu --susfs --zero --extras"
+            args: "--wildsu --susfs --extras"
 
           # --- SakiSU ---
           - id: sakisu-pure
             name: "SakiSU (Pure)"
-            args: "--sakisu --no-susfs --no-zero --extras"
+            args: "--sakisu --no-susfs --extras"
           - id: sakisu-susfs
             name: "SakiSU (SusFS)"
-            args: "--sakisu --susfs --no-zero --extras"
-          - id: sakisu-zero
-            name: "SakiSU (ZeroMount)"
-            args: "--sakisu --no-susfs --zero --extras"
-          - id: sakisu-susfs-zero
-            name: "SakiSU (SusFS + ZeroMount)"
-            args: "--sakisu --susfs --zero --extras"
+            args: "--sakisu --susfs --extras"
 
           # --- ApexSU ---
           - id: apexsu-pure
             name: "ApexSU (Pure)"
-            args: "--apexsu --no-susfs --no-zero --extras"
+            args: "--apexsu --no-susfs --extras"
           - id: apexsu-susfs
             name: "ApexSU (SusFS)"
-            args: "--apexsu --susfs --no-zero --extras"
-          - id: apexsu-zero
-            name: "ApexSU (ZeroMount)"
-            args: "--apexsu --no-susfs --zero --extras"
-          - id: apexsu-susfs-zero
-            name: "ApexSU (SusFS + ZeroMount)"
-            args: "--apexsu --susfs --zero --extras"
+            args: "--apexsu --susfs --extras"
 
           # --- Stock Kernel ---
           - id: stock
             name: "Stock"
-            args: "--stock --no-susfs --no-zero --extras"
+            args: "--stock --no-susfs --extras"
 
     steps:
       - name: Checkout Code
@@ -298,14 +226,12 @@ jobs:
           body: |
             ## OnePlus Ace 2 Pro (PJA110) Full Kernel Release
             
-            Автоматическая сборка всех возможных 49 вариаций ядра Linux 5.15 (Android 13 GKI) для OnePlus Ace 2 Pro (`kalama` / SM8550).
+            Автоматическая сборка всех 25 вариаций ядра Linux 5.15 (Android 13 GKI) для OnePlus Ace 2 Pro (`kalama` / SM8550).
             
             ### Вариации сборок в релизе:
-            Для каждого из 12 поддерживаемых Root-решений собрано ровно 4 комбинации:
-            1. **Чистый рут (Pure)** — без SusFS и ZeroMount.
+            Для каждого из 12 поддерживаемых Root-решений собрано ровно 2 комбинации:
+            1. **Чистый рут (Pure)** — без SusFS.
             2. **Рут + SusFS v2.3.0** — скрытие рута через SusFS.
-            3. **Рут + ZeroMount v2.0** — оверлейное монтирование модулей в обход детектов.
-            4. **Рут + SusFS + ZeroMount** — связка для максимальной скрытности.
             
             Плюс чистая **Stock** сборка ядра (без рут-модификаций).
             

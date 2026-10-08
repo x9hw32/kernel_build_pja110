@@ -41,7 +41,6 @@ JOBS="$(nproc)"
 DO_CLEAN=0
 ROOT_CHOICE="none"
 ENABLE_SUSFS=0
-ENABLE_ZERO=0
 ENABLE_BBR=1
 ENABLE_NTFS=1
 ENABLE_BTRFS=1
@@ -119,8 +118,6 @@ ${BOLD}Root Options:${NC}
 ${BOLD}Addon / Feature Flags:${NC}
   --susfs        Enable SusFS v2.3.0 (and output companion module)
   --no-susfs     Disable SusFS
-  --zero         Enable ZeroMount native VFS kernel driver & companion module
-  --no-zero      Disable ZeroMount
   --gunyah       Enable Gunyah VM support (VirtIO drivers + /dev/udmabuf)
   --no-gunyah    Disable Gunyah VM support
   --no-bbr       Disable TCP BBR congestion control (default: ON)
@@ -142,7 +139,7 @@ ${BOLD}Examples:${NC}
   ./make --update --sukisu              # Update only SukiSU repository & APK
   ./make --sukisu --susfs               # Build SukiSU + SusFS (BBR/NTFS/Btrfs built-in)
   ./make --sukisu --susfs --gunyah      # Build SukiSU + SusFS + Gunyah VM support
-  ./make --wildsu --susfs --zero        # Build WildSU + SusFS + ZeroMount
+  ./make --bakasu --susfs               # Build BakaSU + SusFS
   ./make                                # Build stock kernel without root"
     exit 0
 }
@@ -169,8 +166,8 @@ while [[ $# -gt 0 ]]; do
 
         --susfs)     ENABLE_SUSFS=1         ; BUILD_MODIFIER_PASSED=1 ; shift ;;
         --no-susfs)  ENABLE_SUSFS=0         ; shift ;;
-        --zero)      ENABLE_ZERO=1          ; BUILD_MODIFIER_PASSED=1 ; shift ;;
-        --no-zero)   ENABLE_ZERO=0          ; shift ;;
+        --zero)      log_warn "ZeroMount is deprecated and removed. Ignoring --zero." ; shift ;;
+        --no-zero)   shift ;;
         --gunyah)    ENABLE_GUNYAH=1        ; BUILD_MODIFIER_PASSED=1 ; shift ;;
         --no-gunyah) ENABLE_GUNYAH=0        ; shift ;;
         --bbr)       ENABLE_BBR=1           ; BUILD_MODIFIER_PASSED=1 ; shift ;;
@@ -351,9 +348,8 @@ if [[ ${DO_UPDATE} -eq 1 ]]; then
             update_single_root "${k}"
         done
         # Also update companion modules
-        log_info "Checking companion modules (SusFS, ZeroMount)..."
+        log_info "Checking companion modules (SusFS)..."
         fetch_pkg "${MODULES_DIR}/ksu_module_susfs_1.5.2+.zip" "https://github.com/sidex15/susfs4ksu-module/releases/download/v1.5.2%2B_R28/ksu_module_susfs_1.5.2%2B.zip"
-        fetch_pkg "${MODULES_DIR}/zeromount-v2.0.216-dev.zip" "https://github.com/Enginex0/zeromount/releases/download/v2.0.216-dev/zeromount-v2.0.216-dev.zip"
     fi
     log_succ "All requested updates completed successfully!"
 
@@ -493,15 +489,11 @@ BANNER_TAG="${ROOT_TAG}"
 if [[ ${ENABLE_SUSFS} -eq 1 ]]; then
     BANNER_TAG="${BANNER_TAG}-SUSFS"
 fi
-if [[ ${ENABLE_ZERO} -eq 1 ]]; then
-    BANNER_TAG="${BANNER_TAG}-ZeroMount"
-fi
 # Gunyah VM is enabled without cluttering the kernel version string
 BANNER_SUFFIX="-android13-${BANNER_TAG}-rajok"
 
 log_info "Selected Root : ${BOLD}${ROOT_TAG}${NC}"
 log_info "SusFS Status  : ${BOLD}$([[ ${ENABLE_SUSFS} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')${NC}"
-log_info "ZeroMount     : ${BOLD}$([[ ${ENABLE_ZERO} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')${NC}"
 log_info "Gunyah VM     : ${BOLD}$([[ ${ENABLE_GUNYAH} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')${NC}"
 log_info "TCP BBR       : ${BOLD}$([[ ${ENABLE_BBR} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')${NC}"
 log_info "NTFS3 Support : ${BOLD}$([[ ${ENABLE_NTFS} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')${NC}"
@@ -641,12 +633,8 @@ else
     unset_config_val "CONFIG_KSU_SUSFS_SUS_MAP"
 fi
 
-# Update ZeroMount Kconfig
-if [[ "${ENABLE_ZERO}" -eq 1 ]]; then
-    set_config_val "CONFIG_ZEROMOUNT" "y"
-else
-    unset_config_val "CONFIG_ZEROMOUNT"
-fi
+# Ensure ZeroMount is disabled
+unset_config_val "CONFIG_ZEROMOUNT"
 
 # Ensure SELinux stays enforcing
 unset_config_val "CONFIG_SECURITY_SELINUX_DEVELOP"
@@ -819,20 +807,6 @@ if [[ ${ENABLE_SUSFS} -eq 1 ]]; then
     fi
 fi
 
-OUTPUT_ZERO_MODULE=""
-if [[ ${ENABLE_ZERO} -eq 1 ]]; then
-    ZERO_ZIP_NAME="zeromount-v2.0.216-dev.zip"
-    CACHED_ZERO="${MODULES_DIR}/${ZERO_ZIP_NAME}"
-    if [[ ! -f "${CACHED_ZERO}" ]]; then
-        fetch_pkg "${CACHED_ZERO}" "https://github.com/Enginex0/zeromount/releases/download/v2.0.216-dev/zeromount-v2.0.216-dev.zip"
-    fi
-    if [[ -f "${CACHED_ZERO}" ]]; then
-        cp -p "${CACHED_ZERO}" "${OUT_IMAGES_DIR}/${ZERO_ZIP_NAME}"
-        OUTPUT_ZERO_MODULE="${OUT_IMAGES_DIR}/${ZERO_ZIP_NAME}"
-        log_succ "ZeroMount companion module copied: ${OUTPUT_ZERO_MODULE}"
-    fi
-fi
-
 # Step 6: Print Final Summary
 echo ""
 echo -e "${BOLD}${GREEN}======================================================================${NC}"
@@ -841,7 +815,6 @@ echo -e "${BOLD}${GREEN}========================================================
 echo -e "${BOLD}Kernel Banner :${NC} 5.15.180${BANNER_SUFFIX}"
 echo -e "${BOLD}Root Solution :${NC} ${ROOT_TAG}"
 echo -e "${BOLD}SusFS Status  :${NC} $([[ ${ENABLE_SUSFS} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')"
-echo -e "${BOLD}ZeroMount     :${NC} $([[ ${ENABLE_ZERO} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')"
 echo -e "${BOLD}Gunyah VM     :${NC} $([[ ${ENABLE_GUNYAH} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')"
 echo -e "${BOLD}TCP BBR       :${NC} $([[ ${ENABLE_BBR} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')"
 echo -e "${BOLD}NTFS3 Support :${NC} $([[ ${ENABLE_NTFS} -eq 1 ]] && echo 'Enabled' || echo 'Disabled')"
@@ -863,11 +836,10 @@ echo -e "    * ${OUTPUT_APK_PATH}"
 echo -e "    * ${OUT_IMAGES_DIR}/manager.apk"
 fi
 
-if [[ -n "${OUTPUT_SUSFS_MODULE}" || -n "${OUTPUT_ZERO_MODULE}" ]]; then
+if [[ -n "${OUTPUT_SUSFS_MODULE}" ]]; then
 echo ""
 echo -e "  [Companion Addons / Modules]"
-[[ -n "${OUTPUT_SUSFS_MODULE}" ]] && echo -e "    * SUSFS Module:    ${OUTPUT_SUSFS_MODULE}"
-[[ -n "${OUTPUT_ZERO_MODULE}"  ]] && echo -e "    * ZeroMount Module:${OUTPUT_ZERO_MODULE}"
+echo -e "    * SUSFS Module:    ${OUTPUT_SUSFS_MODULE}"
 fi
 
 echo ""
