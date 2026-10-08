@@ -5,7 +5,7 @@
 ## Возможности
 - **Поддержка Root решений**: BakaSU, SukiSU, KernelSU-Next, KernelSU, APatch, UPatch, MKSU, RKSU, WildSU.
 - **Интеграция аддонов**: SusFS v2.3.0, ZeroMount v2.0.
-- **Подсистемы и модули**: VirtIO, UDMABUF (поддержка VM и стабильность графики SM8550).
+- **Подсистемы и модули**: VirtIO, UDMABUF (стабильность графики SM8550).
 - **Сетевые и файловые оптимизации**: TCP BBR, NTFS3 (Paragon), Btrfs.
 - **Автоматическая упаковка**: AnyKernel3 flashable zip с поддержкой Magiskboot и подписи.
 - **Автоматическое скачивание APK**: Скачивание менеджеров рута с релизов GitHub.
