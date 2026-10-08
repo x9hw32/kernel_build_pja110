@@ -368,10 +368,17 @@ if [[ ${DO_UPDATE} -eq 1 ]]; then
     echo -e "${BOLD}${BLUE}>>> Proceeding to kernel build as requested... <<<${NC}\n"
 fi
 
-# Verification of prerequisites for build
+# Verify Clang toolchain presence (auto-download from Google AOSP if missing)
 if [[ ! -x "${CC}" ]]; then
-    log_err "Clang toolchain not found at ${CC}"
-    exit 1
+    log_warn "Clang compiler not found at ${CC}!"
+    log_info "Downloading official AOSP Clang toolchain (llvm-r450784)..."
+    mkdir -p "${CLANG_DIR}"
+    if curl -fL --retry 3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/llvm-r450784.tar.gz" | tar -xz -C "${CLANG_DIR}"; then
+        log_succ "Clang toolchain downloaded and unpacked successfully!"
+    else
+        log_err "Failed to download Clang. Please check network connection or manually extract Clang to ${CLANG_DIR}"
+        exit 1
+    fi
 fi
 if [[ ! -f "${STOCK_BOOT}" ]]; then
     log_warn "Stock boot.img not found at ${STOCK_BOOT}. Standalone boot.img creation will be skipped."
@@ -535,18 +542,6 @@ if [[ "${DO_CLEAN}" -eq 1 ]]; then
     rm -rf "${OUT_DIR}"/*
 fi
 
-# Verify Clang toolchain presence (auto-download from Google AOSP if missing)
-if [[ ! -f "${CC}" ]]; then
-    log_warn "Clang compiler not found at ${CC}!"
-    log_info "Downloading official AOSP Clang toolchain (llvm-r450784)..."
-    mkdir -p "${CLANG_DIR}"
-    if curl -fL --retry 3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/llvm-r450784.tar.gz" | tar -xz -C "${CLANG_DIR}"; then
-        log_succ "Clang toolchain downloaded and unpacked successfully!"
-    else
-        log_err "Failed to download Clang. Please check network connection or manually extract Clang to ${CLANG_DIR}"
-        exit 1
-    fi
-fi
 
 # Ensure .config exists
 if [[ ! -f "${OUT_DIR}/.config" ]]; then

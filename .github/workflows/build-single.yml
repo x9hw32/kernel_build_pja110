@@ -1,0 +1,127 @@
+name: Build Single Kernel Flavor
+
+on:
+  workflow_dispatch:
+    inputs:
+      root:
+        description: 'Root Solution'
+        required: true
+        type: choice
+        default: 'bakasu'
+        options:
+          - bakasu
+          - sukisu
+          - ksun
+          - ksu
+          - resuksu
+          - yukisu
+          - mksu
+          - rksu
+          - ksulite
+          - wildsu
+          - sakisu
+          - apexsu
+          - stock
+      enable_susfs:
+        description: 'Enable SusFS v2.3.0 (ignored for stock)'
+        required: true
+        type: boolean
+        default: true
+      enable_zeromount:
+        description: 'Enable ZeroMount v2.0 (ignored for stock)'
+        required: true
+        type: boolean
+        default: true
+      create_release:
+        description: 'Publish directly to GitHub Releases'
+        required: true
+        type: boolean
+        default: false
+      tag_name:
+        description: 'Release Tag (leave empty for auto tag if creating release)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: Build Kernel (${{ github.event.inputs.root }})
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+          sudo apt-get clean
+          df -h
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev python3 zip curl git qemu-user
+
+      - name: Prepare Build Flags
+        id: flags
+        run: |
+          ROOT="${{ github.event.inputs.root }}"
+          ENABLE_SUSFS="${{ github.event.inputs.enable_susfs }}"
+          ENABLE_ZERO="${{ github.event.inputs.enable_zeromount }}"
+
+          ARGS="--${ROOT}"
+          if [ "${ROOT}" = "stock" ]; then
+            ARGS="--stock --no-susfs --no-zero"
+          else
+            if [ "${ENABLE_SUSFS}" = "true" ]; then
+              ARGS="${ARGS} --susfs"
+            else
+              ARGS="${ARGS} --no-susfs"
+            fi
+            if [ "${ENABLE_ZERO}" = "true" ]; then
+              ARGS="${ARGS} --zero"
+            else
+              ARGS="${ARGS} --no-zero"
+            fi
+          fi
+          ARGS="${ARGS} --extras"
+
+          echo "Build arguments: ${ARGS}"
+          echo "args=${ARGS}" >> $GITHUB_OUTPUT
+
+      - name: Build Kernel
+        run: |
+          chmod +x make.sh
+          ./make.sh ${{ steps.flags.outputs.args }}
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p artifacts
+          cp -v out_images/AnyKernel3-5.15.180-*.zip artifacts/ 2>/dev/null || true
+          rm -f artifacts/AnyKernel3-latest.zip
+          cd artifacts
+          sha256sum AnyKernel3-*.zip > sha256sums.txt
+          ls -la
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ github.event.inputs.root }}-single
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish to Release (Optional)
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.event.inputs.tag_name != '' && github.event.inputs.tag_name || format('single-{0}-{1}', github.event.inputs.root, github.run_id) }}
+          name: OnePlus Ace 2 Pro (PJA110) Kernel - ${{ github.event.inputs.root }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/*
