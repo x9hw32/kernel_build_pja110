@@ -1,35 +1,4 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# Modular Kernel Build Script for OnePlus Ace 2 Pro (PJA110 / kalama)
-# Author: rajok
-#
-# Supported Roots:
-#   --sukisu     : SukiSU-Ultra (SukiSU)
-#   --ksun       : KernelSU-Next
-#   --ksu        : Official KernelSU
-#   --resuksu    : ReSukiSU
-#   --yukisu     : YukiSU
-#   --mksu       : More-KernelSU (MKSU)
-#   --bakasu     : BakaSU
-#   --rksu       : Restricted-KernelSU
-#   --ksulite    : KernelSU-Lite
-#   --no-root    : Stock kernel without root (Default when no root flag given)
-#
-# Supported Addons / Features:
-#   --susfs      : SusFS v2.3.0
-#   --no-susfs   : Disable SusFS
-#   --zero       : ZeroMount companion module
-#
-# Repository Updates:
-#   --update            : Update all root repositories and download latest APKs
-#   --update --<root>   : Update only the specified root repository & APK
-#   --build             : Force kernel compilation after update
-#
-# Build Options:
-#   --clean      : Clean out/ before build
-#   -j<N>        : Number of build threads (default: all cores)
-#   -h, --help   : Show help and examples
-# ==============================================================================
 
 set -eo pipefail
 
