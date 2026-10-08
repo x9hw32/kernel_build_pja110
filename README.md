@@ -9,10 +9,10 @@
 ## Возможности
 - **Поддержка Root решений**: SukiSU Ultra, KernelSU, KernelSU Next, ReSukiSU Ultra, YukiSU, More KernelSU, BakaSU, RKSU, KernelSU Lite, WildSU, SakiSU, ApexSU.
 - **Интеграция аддонов**: 
-  - **SusFS v2.3.0** (полное скрытие рута и маунтов).
-  - **ZeroMount v2.0** (нативный VFS-режим).
+  - **SusFS** (полное скрытие рута и маунтов).
+  - **ZeroMount** (нативный VFS-режим).
 - **Подсистемы и модули**: 
-  - `CONFIG_UDMABUF=y` + VirtIO (стабильность графики SM8550 и поддержка VM).
+  - `CONFIG_UDMABUF=y` + VirtIO (стабильность графики SM8550).
 - **Сетевые и файловые оптимизации**: 
   - TCP BBR (алгоритм контроля перегрузки Google).
   - NTFS3 (нативный быстрый драйвер Paragon).
@@ -86,7 +86,7 @@ stock_images/boot.img
 ## Результаты сборки (`out_images/`)
 После завершения компиляции в папке `out_images/` создаются:
 1. **`AnyKernel3-*.zip`** — установочный архив для прошивки через **KernelFlasher** (на живой системе) или через **TWRP Recovery**.
-2. **`ReSukiSU_*.apk`** / **`manager.apk`** — актуальное приложение рут-менеджера.
+2. **`*.apk`** / **`manager.apk`** — актуальное приложение рут-менеджера.
 3. **`ksu_module_susfs_*.zip`** — компаньон-модуль SusFS.
 4. **`zeromount-*.zip`** — компаньон-модуль ZeroMount.
 
