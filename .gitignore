@@ -31,7 +31,6 @@ prebuilts/
 /oplus
 /vendor
 /make
-/common/
 
 # Temporary test binaries and debug drivers
 crosvm*

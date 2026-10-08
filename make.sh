@@ -512,10 +512,7 @@ fi
 if [[ ${ENABLE_ZERO} -eq 1 ]]; then
     BANNER_TAG="${BANNER_TAG}-ZeroMount"
 fi
-if [[ ${ENABLE_GUNYAH} -eq 1 ]]; then
-    BANNER_TAG="${BANNER_TAG}-Gunyah"
-fi
-
+# Gunyah VM is enabled without cluttering the kernel version string
 BANNER_SUFFIX="-android13-${BANNER_TAG}-rajok"
 
 log_info "Selected Root : ${BOLD}${ROOT_TAG}${NC}"
@@ -567,6 +564,19 @@ fi
 if [[ "${DO_CLEAN}" -eq 1 ]]; then
     log_warn "Cleaning ${OUT_DIR}..."
     rm -rf "${OUT_DIR}"/*
+fi
+
+# Verify Clang toolchain presence (auto-download from Google AOSP if missing)
+if [[ ! -f "${CC}" ]]; then
+    log_warn "Clang compiler not found at ${CC}!"
+    log_info "Downloading official AOSP Clang toolchain (llvm-r450784)..."
+    mkdir -p "${CLANG_DIR}"
+    if curl -fL --retry 3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/llvm-r450784.tar.gz" | tar -xz -C "${CLANG_DIR}"; then
+        log_succ "Clang toolchain downloaded and unpacked successfully!"
+    else
+        log_err "Failed to download Clang. Please check network connection or manually extract Clang to ${CLANG_DIR}"
+        exit 1
+    fi
 fi
 
 # Ensure .config exists
