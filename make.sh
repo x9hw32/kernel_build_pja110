@@ -688,6 +688,11 @@ unset_config_val "CONFIG_UDMABUF"
 unset_config_val "CONFIG_VHOST_NET"
 unset_config_val "CONFIG_VIRTIO_VSOCKETS"
 
+# Ensure GKI BTF debug info and module mismatch tolerance are enabled for Android 13 bpfloader and vendor DLKM
+set_config_val "CONFIG_DEBUG_INFO_BTF" "y"
+set_config_val "CONFIG_DEBUG_INFO_BTF_MODULES" "y"
+set_config_val "CONFIG_MODULE_ALLOW_BTF_MISMATCH" "y"
+
 # Ensure all config dependencies are cleanly resolved without prompts
 make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
     CC="${CC}" LD="${LD}" HOSTCC=clang HOSTCXX=clang++ \
