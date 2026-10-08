@@ -1,0 +1,26 @@
+# OnePlus Ace 2 Pro (PJA110) Kernel Build Suite
+
+Автоматизированный инструмент сборки ядра Android 13 (Linux 5.15) для OnePlus Ace 2 Pro (SM8550 / kalama).
+
+## Возможности
+- **Поддержка Root решений**: BakaSU, SukiSU, KernelSU-Next, KernelSU, APatch, UPatch, MKSU, RKSU, WildSU.
+- **Интеграция аддонов**: SusFS v2.3.0, ZeroMount v2.0.
+- **Подсистемы и модули**: VirtIO, UDMABUF (поддержка VM и стабильность графики SM8550).
+- **Сетевые и файловые оптимизации**: TCP BBR, NTFS3 (Paragon), Btrfs.
+- **Автоматическая упаковка**: AnyKernel3 flashable zip с поддержкой Magiskboot и подписи.
+- **Автоматическое скачивание APK**: Скачивание менеджеров рута с релизов GitHub.
+
+## Использование
+```bash
+# Базовая сборка BakaSU + SusFS + ZeroMount + Extras
+./make.sh --bakasu --susfs --zero --extras
+
+# Сборка SukiSU
+./make.sh --sukisu --susfs --extras
+
+# Сборка без рута (чистый сток + фичи)
+./make.sh --stock --extras
+
+# Справка по всем ключам
+./make.sh --help
+```

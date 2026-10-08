@@ -1,0 +1,55 @@
+# ========================================================
+# Git Ignore for OnePlus Ace 2 Pro (PJA110) Kernel Project
+# ========================================================
+
+# Build output directories & intermediate objects
+out/
+/out_images/
+/temp/
+
+# Large binary disk and partition images (>100MB blocked by GitHub)
+*.img
+*.bin
+/boot.img
+/vendor_dlkm.img
+/system_dlkm.img
+/stock_images/
+
+# Prebuilt Toolchains and Compilers (gigabytes in size)
+clang-*/
+toolchains/
+prebuilts/
+
+# Root clones and download caches (fetched automatically by make.sh)
+/roots/
+/packages/
+/KernelSU
+
+# Dynamic symlinks generated at build time
+/build
+/modules
+/oplus
+/vendor
+/make
+/common/
+
+# Temporary test binaries and debug drivers
+crosvm*
+debugdata*
+gh_rm_drv.ko
+gunyah.ko
+virtmgr*
+virtualizationservice*
+vmmgr*
+vs_debug*
+mem_test/
+*.dts
+*.config
+cont.sh
+
+# Editor / System artifacts
+*.swp
+*~
+.DS_Store
+.idea/
+.vscode/
