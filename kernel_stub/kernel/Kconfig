@@ -1,0 +1,5 @@
+menu "KernelSU Stub"
+config KSU
+	bool "KernelSU function support (Stub)"
+	default n
+endmenu

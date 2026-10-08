@@ -304,7 +304,7 @@ update_single_root() {
     echo -e "${BOLD}${CYAN}--> [${key}]${NC} (${url})"
     if [[ ! -d "${dir}" ]]; then
         log_info "Cloning ${key}..."
-        git clone --depth 1 "${url}" "${dir}" >/dev/null 2>&1 || git clone "${url}" "${dir}"
+        git clone --depth 1 "${url}" "${dir}" || git clone "${url}" "${dir}"
     else
         log_info "Pulling latest commits for ${key}..."
         if git -C "${dir}" pull --rebase origin $(git -C "${dir}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") >/dev/null 2>&1; then
@@ -509,7 +509,7 @@ log_info "Btrfs Support : ${BOLD}$([[ ${ENABLE_BTRFS} -eq 1 ]] && echo 'Enabled'
 log_info "LOCALVERSION  : ${BOLD}${BANNER_SUFFIX}${NC}"
 
 # Setup Root repository link
-STUB_DIR="${ROOTS_DIR}/stub"
+STUB_DIR="${TOP_DIR}/kernel_stub"
 mkdir -p "${STUB_DIR}/kernel"
 if [[ ! -f "${STUB_DIR}/kernel/Kconfig" ]]; then
     cat <<'EOF' > "${STUB_DIR}/kernel/Kconfig"
@@ -532,8 +532,13 @@ if is_ksu_root "${ROOT_CHOICE}"; then
         log_info "Directory ${ROOT_REPO_DIR} does not exist, cloning..."
         update_single_root "${ROOT_CHOICE}"
     fi
-    log_info "Linking KernelSU -> ${ROOT_REPO_DIR}"
-    ln -sfn "${ROOT_REPO_DIR}" "${TOP_DIR}/KernelSU"
+    if [[ -d "${ROOT_REPO_DIR}/kernel" ]]; then
+        log_info "Linking KernelSU -> ${ROOT_REPO_DIR}"
+        ln -sfn "${ROOT_REPO_DIR}" "${TOP_DIR}/KernelSU"
+    else
+        log_warn "KernelSU driver not found at ${ROOT_REPO_DIR}/kernel, falling back to stub!"
+        ln -sfn "${STUB_DIR}" "${TOP_DIR}/KernelSU"
+    fi
 else
     # Stock or non-KSU choice
     log_info "Using clean stub for KernelSU"
@@ -543,6 +548,10 @@ else
         update_single_root "${ROOT_CHOICE}"
     fi
 fi
+
+# Ensure drivers/kernelsu symlink is present and points to active KernelSU driver
+mkdir -p "${COMMON_DIR}/drivers"
+ln -sfn "../../KernelSU/kernel" "${COMMON_DIR}/drivers/kernelsu"
 
 # Clean if requested
 if [[ "${DO_CLEAN}" -eq 1 ]]; then

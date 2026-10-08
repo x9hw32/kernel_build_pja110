@@ -165,4 +165,3 @@ sphinx_*/
 # Patch backups
 *.orig
 *.rej
-/drivers/kernelsu
