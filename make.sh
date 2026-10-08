@@ -627,12 +627,8 @@ else
     unset_config_val "CONFIG_KSU_SUSFS_SUS_MAP"
 fi
 
-# Update ZeroMount Kconfig
-if [[ "${ENABLE_ZERO}" -eq 1 ]]; then
-    set_config_val "CONFIG_ZEROMOUNT" "y"
-else
-    unset_config_val "CONFIG_ZEROMOUNT"
-fi
+# Ensure ZeroMount VFS driver is disabled (ZeroMount works via its companion module)
+unset_config_val "CONFIG_ZEROMOUNT"
 
 # Ensure SELinux stays enforcing
 unset_config_val "CONFIG_SECURITY_SELINUX_DEVELOP"
@@ -691,10 +687,6 @@ unset_config_val "CONFIG_VIRTIO_DMA_SHARED_BUFFER"
 unset_config_val "CONFIG_UDMABUF"
 unset_config_val "CONFIG_VHOST_NET"
 unset_config_val "CONFIG_VIRTIO_VSOCKETS"
-
-# Disable BTF debug info to eliminate host pahole and libelf issues
-unset_config_val "CONFIG_DEBUG_INFO_BTF"
-unset_config_val "CONFIG_DEBUG_INFO_BTF_MODULES"
 
 # Ensure all config dependencies are cleanly resolved without prompts
 make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
