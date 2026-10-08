@@ -641,8 +641,12 @@ else
     unset_config_val "CONFIG_KSU_SUSFS_SUS_MAP"
 fi
 
-# Ensure ZeroMount VFS driver is disabled (ZeroMount works via its companion module)
-unset_config_val "CONFIG_ZEROMOUNT"
+# Update ZeroMount Kconfig
+if [[ "${ENABLE_ZERO}" -eq 1 ]]; then
+    set_config_val "CONFIG_ZEROMOUNT" "y"
+else
+    unset_config_val "CONFIG_ZEROMOUNT"
+fi
 
 # Ensure SELinux stays enforcing
 unset_config_val "CONFIG_SECURITY_SELINUX_DEVELOP"
