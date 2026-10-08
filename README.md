@@ -37,11 +37,29 @@ sudo apt install -y build-essential bc bison flex libssl-dev python3 zip curl gi
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/<твой_ник>/<имя_репозитория>.git
-cd <имя_репозитория>
+git clone https://github.com/x9hw32/kernel_build_pja110.git
+cd kernel_build_pja110
 ```
 
-### 2. Сборка ядра
+### 2. (Опционально) Стоковый boot.img
+Если вы хотите собрать не только AnyKernel3 ZIP, но и отдельный файл `out_images/boot.img`:
+Поместите заводской `boot.img` вашей текущей прошивки по пути:
+```text
+stock_images/boot.img
+```
+**Откуда его взять:**
+- **Через KernelFlasher**: Открыть приложение на телефоне -> нажать на текущий слот -> `Backup` -> Сохранить `boot.img`.
+- **Через Termux / ADB Root**:
+  ```bash
+  su -c "dd if=/dev/block/by-name/boot_a of=/sdcard/boot.img"
+  ```
+- **Из официальной прошивки (OTA `payload.bin`)**: распаковать утилитой `payload-dumper-go`:
+  ```bash
+  payload-dumper-go -p boot payload.bin
+  ```
+*(Если папка `stock_images/` пустая, сборщик пропустит создание `boot.img`, но **всё равно полноценно соберёт AnyKernel3 ZIP**, которому стоковый файл на ПК не требуется!)*
+
+### 3. Сборка ядра
 
 **Рекомендуемая конфигурация (BakaSU + SusFS + ZeroMount + Extras):**
 ```bash

@@ -374,8 +374,8 @@ if [[ ! -x "${CC}" ]]; then
     exit 1
 fi
 if [[ ! -f "${STOCK_BOOT}" ]]; then
-    log_err "Stock boot.img not found at ${STOCK_BOOT}"
-    exit 1
+    log_warn "Stock boot.img not found at ${STOCK_BOOT}. Standalone boot.img creation will be skipped."
+    log_info "AnyKernel3 flashable zip will still be generated (it patches boot on-device)."
 fi
 
 # Define Mapping for Roots: (TAG, ROOT_DIR, APK_FILE, APK_DOWNLOAD_URL)
@@ -722,24 +722,28 @@ if [[ ! -f "${BUILT_IMAGE}" ]]; then
     exit 1
 fi
 
-# Step 2: Package boot.img (using magiskboot to preserve exact OEM AVB header & key)
-log_info "Packaging boot.img..."
-TEMP_UNPACK="/tmp/pja110_boot_unpack_$$"
-mkdir -p "${TEMP_UNPACK}"
-trap "rm -rf ${TEMP_UNPACK}" EXIT
+# Step 2: Package boot.img (optional: requires stock_images/boot.img)
+if [[ -f "${STOCK_BOOT}" ]]; then
+    log_info "Packaging boot.img..."
+    TEMP_UNPACK="/tmp/pja110_boot_unpack_$$"
+    mkdir -p "${TEMP_UNPACK}"
+    trap "rm -rf ${TEMP_UNPACK}" EXIT
 
-TARGET_BOOT="${OUT_IMAGES_DIR}/boot.img"
-MAGISKBOOT="qemu-arm ${AK3_TEMPLATE}/tools/magiskboot"
+    TARGET_BOOT="${OUT_IMAGES_DIR}/boot.img"
+    MAGISKBOOT="qemu-arm ${AK3_TEMPLATE}/tools/magiskboot"
 
-(
-    cd "${TEMP_UNPACK}"
-    ${MAGISKBOOT} unpack "${STOCK_BOOT}" >/dev/null
-    cp -f "${BUILT_IMAGE}" kernel
-    ${MAGISKBOOT} repack "${STOCK_BOOT}" "${TARGET_BOOT}" >/dev/null
-)
+    (
+        cd "${TEMP_UNPACK}"
+        ${MAGISKBOOT} unpack "${STOCK_BOOT}" >/dev/null
+        cp -f "${BUILT_IMAGE}" kernel
+        ${MAGISKBOOT} repack "${STOCK_BOOT}" "${TARGET_BOOT}" >/dev/null
+    )
 
-cp -p "${TARGET_BOOT}" "${TOP_DIR}/boot.img"
-log_succ "boot.img successfully created with preserved OEM AVB footer!"
+    cp -p "${TARGET_BOOT}" "${TOP_DIR}/boot.img"
+    log_succ "boot.img successfully created with preserved OEM AVB footer!"
+else
+    log_info "Skipping standalone boot.img creation (no stock_images/boot.img provided)."
+fi
 
 # Step 3: Package AnyKernel3 Flashable Zip
 log_info "Packaging AnyKernel3 flashable zip..."
