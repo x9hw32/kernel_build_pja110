@@ -3,8 +3,8 @@
 Автоматизированный инструмент сборки ядра Android 13 (Linux 5.15) для OnePlus Ace 2 Pro (SM8550 / kalama).
 
 ## Возможности
-- **Поддержка Root решений**: BakaSU, SukiSU, KernelSU-Next, KernelSU, APatch, UPatch, MKSU, RKSU, WildSU.
-- **Интеграция аддонов**: SusFS v2.3.0, ZeroMount v2.0.
+- **Поддержка Root решений**: SukiSU Ultra, KernelSU, KernelSU Next, ReSukiSU Ultra, YukiSU, More KernelSU, BakaSU, RKSU, KernelSU Lite, WildSU, SakiSU, ApexSU.
+- **Интеграция аддонов**: SusFS, ZeroMount.
 - **Подсистемы и модули**: VirtIO, UDMABUF (стабильность графики SM8550).
 - **Сетевые и файловые оптимизации**: TCP BBR, NTFS3 (Paragon), Btrfs.
 - **Автоматическая упаковка**: AnyKernel3 flashable zip с поддержкой Magiskboot и подписи.
