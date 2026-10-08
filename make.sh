@@ -369,20 +369,25 @@ if [[ ${DO_UPDATE} -eq 1 ]]; then
     echo -e "${BOLD}${BLUE}>>> Proceeding to kernel build as requested... <<<${NC}\n"
 fi
 
-# Verify Clang toolchain presence (auto-download from Google AOSP if missing)
+# Verify Clang toolchain presence (auto-download from GitHub if missing)
 if [[ ! -x "${CC}" ]]; then
     log_warn "Clang compiler not found at ${CC}!"
-    log_info "Downloading official AOSP Clang toolchain (llvm-r450784)..."
+    log_info "Cloning official AOSP Clang toolchain (r450784d)..."
     mkdir -p "${CLANG_DIR}"
-    if curl -fL --retry 3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/llvm-r450784.tar.gz" | tar -xz -C "${CLANG_DIR}"; then
+    if git clone --depth=1 https://github.com/TheBizarreAbhishek/clang-r450784d.git "${CLANG_DIR}"; then
         chmod -R +x "${CLANG_DIR}/bin" 2>/dev/null || true
         export PATH="${CLANG_DIR}/bin:${PATH}"
-        log_succ "Clang toolchain downloaded and unpacked successfully!"
+        log_succ "Clang toolchain downloaded successfully!"
     else
         log_err "Failed to download Clang. Please check network connection or manually extract Clang to ${CLANG_DIR}"
         exit 1
     fi
 fi
+
+# Ensure prebuilts symlinks point to CLANG_DIR
+mkdir -p "${TOP_DIR}/prebuilts/clang/host/linux-x86"
+ln -sfn "${CLANG_DIR}" "${TOP_DIR}/prebuilts/clang/host/linux-x86/clang-r450784c"
+ln -sfn "${CLANG_DIR}" "${TOP_DIR}/prebuilts/clang/host/linux-x86/clang-r450784e"
 if [[ ! -f "${STOCK_BOOT}" ]]; then
     log_warn "Stock boot.img not found at ${STOCK_BOOT}. Standalone boot.img creation will be skipped."
     log_info "AnyKernel3 flashable zip will still be generated (it patches boot on-device)."
