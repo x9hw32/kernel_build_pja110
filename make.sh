@@ -707,10 +707,6 @@ make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
 log_info "Compiling kernel with ${JOBS} jobs..."
 BUILD_START=$(date +%s)
 
-# Ensure no kernel build number counter is incremented or recorded
-rm -f "${OUT_DIR}/.version"
-export KBUILD_BUILD_VERSION="1"
-
 make -C "${COMMON_DIR}" O="${OUT_DIR}" ARCH=arm64 \
     CC="${CC}" LD="${LD}" HOSTCC=clang HOSTCXX=clang++ \
     LLVM=1 LLVM_IAS=1 \
