@@ -293,6 +293,58 @@ resolve_root_apk() {
     return 0
 }
 
+# Root compatibility patches
+patch_single_root() {
+    local key="$1"
+    local dir="${ROOTS_DIR}/${key}"
+    [[ ! -d "${dir}" ]] && return 0
+
+    case "${key}" in
+        wildsu)
+            # Ensure stable release tag v3.1.2 is used instead of WIP dev branch
+            local current_ref
+            current_ref=$(git -C "${dir}" describe --tags 2>/dev/null || git -C "${dir}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+            if [[ "${current_ref}" != "v3.1.2"* ]]; then
+                log_info "Ensuring WildSU is checked out to stable release v3.1.2..."
+                git -C "${dir}" checkout v3.1.2 2>/dev/null || {
+                    git -C "${dir}" fetch --depth 1 origin tag v3.1.2 2>/dev/null || git -C "${dir}" fetch origin 2>/dev/null || true
+                    git -C "${dir}" checkout v3.1.2 2>/dev/null || true
+                }
+            fi
+            ;;
+        apexsu)
+            if [[ -f "${dir}/kernel/supercalls.c" ]]; then
+                if ! grep -q "int ksu_install_fd" "${dir}/kernel/supercalls.c" 2>/dev/null; then
+                    log_info "Applying ApexSU compatibility fix: adding missing ksu_install_fd()..."
+                    cat <<'EOF' >> "${dir}/kernel/supercalls.c"
+
+int ksu_install_fd(void)
+{
+    return install();
+}
+EOF
+                fi
+            fi
+            ;;
+        resuksu)
+            if [[ -f "${dir}/kernel/supercall/dispatch.c" ]]; then
+                if ! grep -q "<linux/susfs.h>" "${dir}/kernel/supercall/dispatch.c" 2>/dev/null; then
+                    log_info "Applying ReSukiSU compatibility fix: injecting <linux/susfs.h>..."
+                    sed -i 's|#include <linux/susfs_def.h>|#include <linux/susfs_def.h>\n#include <linux/susfs.h>|' "${dir}/kernel/supercall/dispatch.c"
+                fi
+            fi
+            ;;
+        sakisu)
+            if [[ -f "${dir}/kernel/supercall/dispatch.c" ]]; then
+                if ! grep -q "<linux/susfs.h>" "${dir}/kernel/supercall/dispatch.c" 2>/dev/null; then
+                    log_info "Applying SakiSU compatibility fix: injecting <linux/susfs.h>..."
+                    sed -i 's|#include <linux/susfs_def.h>|#include <linux/susfs_def.h>\n#include <linux/susfs.h>|' "${dir}/kernel/supercall/dispatch.c"
+                fi
+            fi
+            ;;
+    esac
+}
+
 # Update Helper
 update_single_root() {
     local key="$1"
@@ -301,10 +353,16 @@ update_single_root() {
     echo -e "${BOLD}${CYAN}--> [${key}]${NC} (${url})"
     if [[ ! -d "${dir}" ]]; then
         log_info "Cloning ${key}..."
-        git clone --depth 1 "${url}" "${dir}" || git clone "${url}" "${dir}"
+        if [[ "${key}" == "wildsu" ]]; then
+            git clone --depth 1 -b v3.1.2 "${url}" "${dir}" || git clone "${url}" "${dir}"
+        else
+            git clone --depth 1 "${url}" "${dir}" || git clone "${url}" "${dir}"
+        fi
     else
         log_info "Pulling latest commits for ${key}..."
-        if git -C "${dir}" pull --rebase origin $(git -C "${dir}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") >/dev/null 2>&1; then
+        if [[ "${key}" == "wildsu" ]]; then
+            git -C "${dir}" checkout v3.1.2 >/dev/null 2>&1 || true
+        elif git -C "${dir}" pull --rebase origin $(git -C "${dir}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") >/dev/null 2>&1; then
             log_succ "${key} repository is up-to-date!"
         elif git -C "${dir}" pull --rebase >/dev/null 2>&1; then
             log_succ "${key} repository is up-to-date!"
@@ -313,6 +371,7 @@ update_single_root() {
             git -C "${dir}" fetch --depth 1 >/dev/null 2>&1 || true
         fi
     fi
+    patch_single_root "${key}"
     local rev msg
     rev=$(git -C "${dir}" rev-parse --short HEAD 2>/dev/null || echo "unknown")
     msg=$(git -C "${dir}" log -1 --pretty=format:"%s" 2>/dev/null || echo "")
@@ -524,6 +583,7 @@ if is_ksu_root "${ROOT_CHOICE}"; then
         log_info "Directory ${ROOT_REPO_DIR} does not exist, cloning..."
         update_single_root "${ROOT_CHOICE}"
     fi
+    patch_single_root "${ROOT_CHOICE}"
     if [[ -d "${ROOT_REPO_DIR}/kernel" ]]; then
         log_info "Linking KernelSU -> ${ROOT_REPO_DIR}"
         ln -sfn "${ROOT_REPO_DIR}" "${TOP_DIR}/KernelSU"
